@@ -1,0 +1,15 @@
+# Bandit configuration for SecureScan
+# Exclude test directories and virtual environments from scanning
+
+exclude_dirs:
+  - tests
+  - .venv
+  - venv
+  - env
+  - .git
+  - __pycache__
+  - node_modules
+
+# Optionally skip specific tests (uncomment as needed)
+# skips:
+#   - B101  # assert_used — acceptable in test code

@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureScan Security Report</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-cyan: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-orange: #db6d28;
+            --accent-blue: #388bfd;
+            --severity-high: #f85149;
+            --severity-medium: #d29922;
+            --severity-low: #388bfd;
+            --gradient-header: linear-gradient(135deg, #1a1f35 0%, #0d1117 50%, #1a1525 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* ── Header ── */
+        .report-header {
+            background: var(--gradient-header);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(88,166,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .report-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-header h1 .shield { margin-right: 0.5rem; }
+
+        .report-header .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .report-header .meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+        /* ── Summary Cards ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+        }
+
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-card.high .value { color: var(--severity-high); }
+        .summary-card.medium .value { color: var(--severity-medium); }
+        .summary-card.low .value { color: var(--severity-low); }
+        .summary-card.total .value { color: var(--accent-cyan); }
+
+        .summary-card.status .value { font-size: 1.5rem; }
+        .status-pass { color: var(--accent-green) !important; }
+        .status-fail { color: var(--severity-high) !important; }
+
+        /* ── Section ── */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .section h2 .icon { margin-right: 0.5rem; }
+
+        /* ── OWASP Table ── */
+        .owasp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .owasp-table th {
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .owasp-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .owasp-table tr:hover { background: var(--bg-tertiary); }
+
+        .owasp-id {
+            font-weight: 600;
+            color: var(--accent-purple);
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+
+        .count-badge {
+            display: inline-block;
+            min-width: 28px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .badge-high { background: rgba(248,81,73,0.15); color: var(--severity-high); }
+        .badge-medium { background: rgba(210,153,34,0.15); color: var(--severity-medium); }
+        .badge-low { background: rgba(56,139,253,0.15); color: var(--severity-low); }
+        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-cyan); }
+
+        /* ── Finding Cards ── */
+        .finding-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover { border-color: var(--accent-cyan); }
+
+        .finding-card.severity-HIGH { border-left: 3px solid var(--severity-high); }
+        .finding-card.severity-MEDIUM { border-left: 3px solid var(--severity-medium); }
+        .finding-card.severity-LOW { border-left: 3px solid var(--severity-low); }
+
+        .finding-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .finding-header:hover { background: var(--bg-tertiary); }
+
+        .finding-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .finding-title .test-id {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-HIGH { background: rgba(248,81,73,0.15); color: var(--severity-high); }
+        .severity-MEDIUM { background: rgba(210,153,34,0.15); color: var(--severity-medium); }
+        .severity-LOW { background: rgba(56,139,253,0.15); color: var(--severity-low); }
+
+        .finding-body {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .finding-body.expanded { display: block; }
+
+        .finding-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .finding-meta .meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+        .finding-meta .meta-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .finding-meta .meta-value { color: var(--text-primary); font-weight: 500; }
+
+        .issue-text {
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(210,153,34,0.08);
+            border-left: 3px solid var(--accent-yellow);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .code-snippet {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .remediation-box {
+            padding: 1rem;
+            background: rgba(63,185,80,0.08);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .remediation-box .label {
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Footer ── */
+        .report-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .report-footer a { color: var(--accent-cyan); text-decoration: none; }
+        .report-footer a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .finding-meta { grid-template-columns: 1fr; }
+        }
+
+        /* ── Expand/Collapse ── */
+        .toggle-icon {
+            transition: transform 0.2s;
+            color: var(--text-muted);
+        }
+        .toggle-icon.rotated { transform: rotate(90deg); }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="report-header">
+            <h1><span class="shield">🛡️</span> SecureScan Security Report</h1>
+            <div class="meta">
+                <span>📂 Target: <strong>C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable</strong></span>
+                <span>🕐 Scanned: <strong>2026-05-22 19:06:06 UTC</strong></span>
+                <span>⏱️ Duration: <strong>0.93s</strong></span>
+                <span>📄 Files: <strong>1</strong></span>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card total">
+                <div class="value">15</div>
+                <div class="label">Total Findings</div>
+            </div>
+            <div class="summary-card high">
+                <div class="value">5</div>
+                <div class="label">🔴 High</div>
+            </div>
+            <div class="summary-card medium">
+                <div class="value">4</div>
+                <div class="label">🟡 Medium</div>
+            </div>
+            <div class="summary-card low">
+                <div class="value">6</div>
+                <div class="label">🔵 Low</div>
+            </div>
+            <div class="summary-card status">
+                
+                <div class="value status-fail">❌ FAIL</div>
+                
+                <div class="label">Status</div>
+            </div>
+        </div>
+
+        <!-- OWASP Top 10 Breakdown -->
+        
+        <div class="section">
+            <h2><span class="icon">🏛️</span> OWASP Top 10:2021 Breakdown</h2>
+            <table class="owasp-table">
+                <thead>
+                    <tr>
+                        <th>OWASP ID</th>
+                        <th>Category</th>
+                        <th>Total</th>
+                        <th>High</th>
+                        <th>Medium</th>
+                        <th>Low</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A03:2021</span></td>
+                        <td>Injection</td>
+                        <td><span class="count-badge badge-total">5</span></td>
+                        <td><span class="count-badge badge-high">2</span></td>
+                        <td><span class="count-badge badge-medium">2</span></td>
+                        <td><span class="count-badge badge-low">1</span></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A02:2021</span></td>
+                        <td>Cryptographic Failures</td>
+                        <td><span class="count-badge badge-total">3</span></td>
+                        <td><span class="count-badge badge-high">2</span></td>
+                        <td><span class="count-badge badge-medium">0</span></td>
+                        <td><span class="count-badge badge-low">1</span></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A08:2021</span></td>
+                        <td>Software and Data Integrity Failures</td>
+                        <td><span class="count-badge badge-total">2</span></td>
+                        <td><span class="count-badge badge-high">0</span></td>
+                        <td><span class="count-badge badge-medium">1</span></td>
+                        <td><span class="count-badge badge-low">1</span></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A05:2021</span></td>
+                        <td>Security Misconfiguration</td>
+                        <td><span class="count-badge badge-total">2</span></td>
+                        <td><span class="count-badge badge-high">0</span></td>
+                        <td><span class="count-badge badge-medium">0</span></td>
+                        <td><span class="count-badge badge-low">2</span></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A01:2021</span></td>
+                        <td>Broken Access Control</td>
+                        <td><span class="count-badge badge-total">2</span></td>
+                        <td><span class="count-badge badge-high">1</span></td>
+                        <td><span class="count-badge badge-medium">1</span></td>
+                        <td><span class="count-badge badge-low">0</span></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span class="owasp-id">A07:2021</span></td>
+                        <td>Identification and Authentication Failures</td>
+                        <td><span class="count-badge badge-total">1</span></td>
+                        <td><span class="count-badge badge-high">0</span></td>
+                        <td><span class="count-badge badge-medium">0</span></td>
+                        <td><span class="count-badge badge-low">1</span></td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+        
+
+        <!-- Detailed Findings -->
+        <div class="section">
+            <h2><span class="icon">📋</span> Detailed Findings (15)</h2>
+
+            
+
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B403</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:11</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:11</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank" style="color: var(--accent-cyan);">CWE-502</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A08:2021 — Software and Data Integrity Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Consider possible security implications associated with pickle module.
+                    </div>
+
+                    
+                    <div class="code-snippet">10 import os
+11 import pickle
+12 import random</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid deserializing data from untrusted sources with pickle, marshal, or shelve. Use safer formats like JSON. If YAML is needed, always use yaml.safe_load().
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B404</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:13</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:13</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank" style="color: var(--accent-cyan);">CWE-78</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A03:2021 — Injection</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Consider possible security implications associated with the subprocess module.
+                    </div>
+
+                    
+                    <div class="code-snippet">12 import random
+13 import subprocess
+14 import tempfile</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-HIGH">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B602</span>
+                        <span>subprocess_popen_with_shell_equals_true</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:21</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-HIGH">HIGH</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:21</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">HIGH / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank" style="color: var(--accent-cyan);">CWE-78</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A03:2021 — Injection</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> subprocess call with shell=True identified, security issue.
+                    </div>
+
+                    
+                    <div class="code-snippet">20     &#34;&#34;&#34;OS Command Injection via subprocess with shell=True (B602, CWE-78).&#34;&#34;&#34;
+21     result = subprocess.call(user_input, shell=True)
+22     return result</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-HIGH">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B605</span>
+                        <span>start_process_with_a_shell</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:27</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-HIGH">HIGH</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:27</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">HIGH / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank" style="color: var(--accent-cyan);">CWE-78</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A03:2021 — Injection</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Starting a process with a shell, possible injection detected, security issue.
+                    </div>
+
+                    
+                    <div class="code-snippet">26     &#34;&#34;&#34;OS Command Injection via os.system (B605, CWE-78).&#34;&#34;&#34;
+27     os.system(command)
+28</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-MEDIUM">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B307</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:32</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-MEDIUM">MEDIUM</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:32</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">MEDIUM / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank" style="color: var(--accent-cyan);">CWE-78</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A03:2021 — Injection</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of possibly insecure function - consider using safer ast.literal_eval.
+                    </div>
+
+                    
+                    <div class="code-snippet">31     &#34;&#34;&#34;Code Injection via eval() (B307, CWE-94).&#34;&#34;&#34;
+32     return eval(expression)
+33</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-MEDIUM">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B102</span>
+                        <span>exec_used</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:37</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-MEDIUM">MEDIUM</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:37</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">MEDIUM / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank" style="color: var(--accent-cyan);">CWE-78</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A03:2021 — Injection</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of exec detected.
+                    </div>
+
+                    
+                    <div class="code-snippet">36     &#34;&#34;&#34;Code Injection via exec() (B102, CWE-78).&#34;&#34;&#34;
+37     exec(code_string)
+38</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B105</span>
+                        <span>hardcoded_password_string</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:44</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:44</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / MEDIUM</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/259.html" target="_blank" style="color: var(--accent-cyan);">CWE-259</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A07:2021 — Identification and Authentication Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Possible hardcoded password: &#39;SuperSecret123!&#39;
+                    </div>
+
+                    
+                    <div class="code-snippet">43     &#34;&#34;&#34;Hardcoded password in source code (B105, CWE-259).&#34;&#34;&#34;
+44     password = &#34;SuperSecret123!&#34;
+45     db_config = {</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Never hardcode passwords in source code. Use environment variables, secrets managers, or configuration files excluded from version control.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-HIGH">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B324</span>
+                        <span>hashlib</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:58</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-HIGH">HIGH</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:58</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">HIGH / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/327.html" target="_blank" style="color: var(--accent-cyan);">CWE-327</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A02:2021 — Cryptographic Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of weak MD5 hash for security. Consider usedforsecurity=False
+                    </div>
+
+                    
+                    <div class="code-snippet">57     &#34;&#34;&#34;Use of weak MD5 hash (B303, CWE-328).&#34;&#34;&#34;
+58     return hashlib.md5(password.encode()).hexdigest()
+59</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Replace broken or risky cryptographic algorithms (DES, RC4, Blowfish, MD5, SHA1) with modern alternatives (AES-256, SHA-256, or higher).
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B311</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:63</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:63</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank" style="color: var(--accent-cyan);">CWE-330</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A02:2021 — Cryptographic Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+                    </div>
+
+                    
+                    <div class="code-snippet">62     &#34;&#34;&#34;Use of non-cryptographic random for security (B311, CWE-330).&#34;&#34;&#34;
+63     token = random.randint(100000, 999999)
+64     return str(token)</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Use cryptographically secure random number generators (secrets module or os.urandom()) instead of the random module for security-sensitive operations.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-HIGH">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B324</span>
+                        <span>hashlib</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:69</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-HIGH">HIGH</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:69</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">HIGH / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/327.html" target="_blank" style="color: var(--accent-cyan);">CWE-327</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A02:2021 — Cryptographic Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of weak SHA1 hash for security. Consider usedforsecurity=False
+                    </div>
+
+                    
+                    <div class="code-snippet">68     &#34;&#34;&#34;Use of weak SHA1 hash (B303, CWE-328).&#34;&#34;&#34;
+69     return hashlib.sha1(data.encode()).hexdigest()
+70</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Replace broken or risky cryptographic algorithms (DES, RC4, Blowfish, MD5, SHA1) with modern alternatives (AES-256, SHA-256, or higher).
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-MEDIUM">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B301</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:76</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-MEDIUM">MEDIUM</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:76</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">MEDIUM / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank" style="color: var(--accent-cyan);">CWE-502</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A08:2021 — Software and Data Integrity Failures</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+                    </div>
+
+                    
+                    <div class="code-snippet">75     &#34;&#34;&#34;Insecure deserialization with pickle (B301, CWE-502).&#34;&#34;&#34;
+76     return pickle.loads(data_bytes)
+77</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid deserializing data from untrusted sources with pickle, marshal, or shelve. Use safer formats like JSON. If YAML is needed, always use yaml.safe_load().
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B101</span>
+                        <span>assert_used</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:83</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:83</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/703.html" target="_blank" style="color: var(--accent-cyan);">CWE-703</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A05:2021 — Security Misconfiguration</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+                    </div>
+
+                    
+                    <div class="code-snippet">82     &#34;&#34;&#34;Using assert for validation — stripped in optimized mode (B101, CWE-703).&#34;&#34;&#34;
+83     assert user_input is not None, &#34;Input cannot be None&#34;
+84     assert len(user_input) &gt; 0, &#34;Input cannot be empty&#34;</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Do not use assert statements for security checks — they are stripped in optimized bytecode (-O flag). Use proper conditional checks and raise exceptions.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-LOW">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B101</span>
+                        <span>assert_used</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:84</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-LOW">LOW</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:84</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">LOW / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/703.html" target="_blank" style="color: var(--accent-cyan);">CWE-703</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A05:2021 — Security Misconfiguration</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+                    </div>
+
+                    
+                    <div class="code-snippet">83     assert user_input is not None, &#34;Input cannot be None&#34;
+84     assert len(user_input) &gt; 0, &#34;Input cannot be empty&#34;
+85     return user_input</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Do not use assert statements for security checks — they are stripped in optimized bytecode (-O flag). Use proper conditional checks and raise exceptions.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-MEDIUM">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B306</span>
+                        <span>blacklist</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:90</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-MEDIUM">MEDIUM</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:90</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">MEDIUM / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/377.html" target="_blank" style="color: var(--accent-cyan);">CWE-377</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A01:2021 — Broken Access Control</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Use of insecure and deprecated function (mktemp).
+                    </div>
+
+                    
+                    <div class="code-snippet">89     &#34;&#34;&#34;Insecure temp file creation with mktemp (B306, CWE-377).&#34;&#34;&#34;
+90     tmp = tempfile.mktemp()
+91     with open(tmp, &#34;w&#34;) as f:</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Use tempfile.mkstemp() or tempfile.NamedTemporaryFile() instead of tempfile.mktemp() to avoid race conditions in temporary file creation.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card severity-HIGH">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">B103</span>
+                        <span>set_bad_file_permissions</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— vulnerable_app.py:100</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-HIGH">HIGH</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">C:\Users\Piyush\Downloads\SecureScan-Application-Security-Tool-\tests\sample_vulnerable\vulnerable_app.py:100</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">HIGH / HIGH</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="https://cwe.mitre.org/data/definitions/732.html" target="_blank" style="color: var(--accent-cyan);">CWE-732</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">A01:2021 — Broken Access Control</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> Chmod setting a permissive mask 0o777 on file (filepath).
+                    </div>
+
+                    
+                    <div class="code-snippet">99     &#34;&#34;&#34;Overly permissive file permissions (B103, CWE-276).&#34;&#34;&#34;
+100     os.chmod(filepath, 0o777)
+101</div>
+                    
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        Avoid setting overly permissive file permissions (e.g., 0o777). Use the principle of least privilege — set the minimum necessary permissions (e.g., 0o600 for owner-only access).
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Footer -->
+        <div class="report-footer">
+            Generated by <strong>SecureScan v1.0.0</strong> •
+            <a href="https://owasp.org/www-project-top-ten/" target="_blank">OWASP Top 10:2021</a> •
+            Powered by <a href="https://bandit.readthedocs.io/" target="_blank">Bandit</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleFinding(header) {
+            const body = header.nextElementSibling;
+            const icon = header.querySelector('.toggle-icon');
+            body.classList.toggle('expanded');
+            icon.classList.toggle('rotated');
+        }
+
+        // Expand all HIGH severity findings by default
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.finding-card.severity-HIGH .finding-header').forEach(header => {
+                toggleFinding(header);
+            });
+        });
+    </script>
+</body>
+</html>

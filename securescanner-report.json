@@ -1,0 +1,393 @@
+{
+  "report": {
+    "tool": "SecureScan",
+    "version": "1.0.0",
+    "generated_at": "2026-05-22T19:05:59.138232Z"
+  },
+  "scan": {
+    "metadata": {
+      "target": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable",
+      "timestamp": "2026-05-22T19:05:58.235325+00:00",
+      "duration_seconds": 0.9,
+      "python_version": "3.11.0",
+      "bandit_version": "unknown",
+      "total_files_scanned": 1,
+      "total_files_skipped": 0
+    },
+    "summary": {
+      "total_findings": 15,
+      "severity_counts": {
+        "HIGH": 5,
+        "MEDIUM": 4,
+        "LOW": 6
+      },
+      "confidence_counts": {
+        "HIGH": 14,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "owasp_categories_found": 6
+    },
+    "findings": [
+      {
+        "test_id": "B403",
+        "test_name": "blacklist",
+        "severity": "LOW",
+        "confidence": "HIGH",
+        "cwe_id": 502,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/502.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 11,
+        "line_range": [
+          11
+        ],
+        "code_snippet": "10 import os\n11 import pickle\n12 import random",
+        "issue_text": "Consider possible security implications associated with pickle module.",
+        "owasp_category": "Software and Data Integrity Failures",
+        "owasp_id": "A08:2021",
+        "remediation": "Avoid deserializing data from untrusted sources with pickle, marshal, or shelve. Use safer formats like JSON. If YAML is needed, always use yaml.safe_load()."
+      },
+      {
+        "test_id": "B404",
+        "test_name": "blacklist",
+        "severity": "LOW",
+        "confidence": "HIGH",
+        "cwe_id": 78,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/78.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 13,
+        "line_range": [
+          13
+        ],
+        "code_snippet": "12 import random\n13 import subprocess\n14 import tempfile",
+        "issue_text": "Consider possible security implications associated with the subprocess module.",
+        "owasp_category": "Injection",
+        "owasp_id": "A03:2021",
+        "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+      },
+      {
+        "test_id": "B602",
+        "test_name": "subprocess_popen_with_shell_equals_true",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "cwe_id": 78,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/78.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 21,
+        "line_range": [
+          21
+        ],
+        "code_snippet": "20     \"\"\"OS Command Injection via subprocess with shell=True (B602, CWE-78).\"\"\"\n21     result = subprocess.call(user_input, shell=True)\n22     return result",
+        "issue_text": "subprocess call with shell=True identified, security issue.",
+        "owasp_category": "Injection",
+        "owasp_id": "A03:2021",
+        "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+      },
+      {
+        "test_id": "B605",
+        "test_name": "start_process_with_a_shell",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "cwe_id": 78,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/78.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 27,
+        "line_range": [
+          27
+        ],
+        "code_snippet": "26     \"\"\"OS Command Injection via os.system (B605, CWE-78).\"\"\"\n27     os.system(command)\n28",
+        "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+        "owasp_category": "Injection",
+        "owasp_id": "A03:2021",
+        "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+      },
+      {
+        "test_id": "B307",
+        "test_name": "blacklist",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "cwe_id": 78,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/78.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 32,
+        "line_range": [
+          32
+        ],
+        "code_snippet": "31     \"\"\"Code Injection via eval() (B307, CWE-94).\"\"\"\n32     return eval(expression)\n33",
+        "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
+        "owasp_category": "Injection",
+        "owasp_id": "A03:2021",
+        "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+      },
+      {
+        "test_id": "B102",
+        "test_name": "exec_used",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "cwe_id": 78,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/78.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 37,
+        "line_range": [
+          37
+        ],
+        "code_snippet": "36     \"\"\"Code Injection via exec() (B102, CWE-78).\"\"\"\n37     exec(code_string)\n38",
+        "issue_text": "Use of exec detected.",
+        "owasp_category": "Injection",
+        "owasp_id": "A03:2021",
+        "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+      },
+      {
+        "test_id": "B105",
+        "test_name": "hardcoded_password_string",
+        "severity": "LOW",
+        "confidence": "MEDIUM",
+        "cwe_id": 259,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/259.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 44,
+        "line_range": [
+          44
+        ],
+        "code_snippet": "43     \"\"\"Hardcoded password in source code (B105, CWE-259).\"\"\"\n44     password = \"SuperSecret123!\"\n45     db_config = {",
+        "issue_text": "Possible hardcoded password: 'SuperSecret123!'",
+        "owasp_category": "Identification and Authentication Failures",
+        "owasp_id": "A07:2021",
+        "remediation": "Never hardcode passwords in source code. Use environment variables, secrets managers, or configuration files excluded from version control."
+      },
+      {
+        "test_id": "B324",
+        "test_name": "hashlib",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "cwe_id": 327,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 58,
+        "line_range": [
+          58
+        ],
+        "code_snippet": "57     \"\"\"Use of weak MD5 hash (B303, CWE-328).\"\"\"\n58     return hashlib.md5(password.encode()).hexdigest()\n59",
+        "issue_text": "Use of weak MD5 hash for security. Consider usedforsecurity=False",
+        "owasp_category": "Cryptographic Failures",
+        "owasp_id": "A02:2021",
+        "remediation": "Replace broken or risky cryptographic algorithms (DES, RC4, Blowfish, MD5, SHA1) with modern alternatives (AES-256, SHA-256, or higher)."
+      },
+      {
+        "test_id": "B311",
+        "test_name": "blacklist",
+        "severity": "LOW",
+        "confidence": "HIGH",
+        "cwe_id": 330,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/330.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 63,
+        "line_range": [
+          63
+        ],
+        "code_snippet": "62     \"\"\"Use of non-cryptographic random for security (B311, CWE-330).\"\"\"\n63     token = random.randint(100000, 999999)\n64     return str(token)",
+        "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+        "owasp_category": "Cryptographic Failures",
+        "owasp_id": "A02:2021",
+        "remediation": "Use cryptographically secure random number generators (secrets module or os.urandom()) instead of the random module for security-sensitive operations."
+      },
+      {
+        "test_id": "B324",
+        "test_name": "hashlib",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "cwe_id": 327,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 69,
+        "line_range": [
+          69
+        ],
+        "code_snippet": "68     \"\"\"Use of weak SHA1 hash (B303, CWE-328).\"\"\"\n69     return hashlib.sha1(data.encode()).hexdigest()\n70",
+        "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
+        "owasp_category": "Cryptographic Failures",
+        "owasp_id": "A02:2021",
+        "remediation": "Replace broken or risky cryptographic algorithms (DES, RC4, Blowfish, MD5, SHA1) with modern alternatives (AES-256, SHA-256, or higher)."
+      },
+      {
+        "test_id": "B301",
+        "test_name": "blacklist",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "cwe_id": 502,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/502.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 76,
+        "line_range": [
+          76
+        ],
+        "code_snippet": "75     \"\"\"Insecure deserialization with pickle (B301, CWE-502).\"\"\"\n76     return pickle.loads(data_bytes)\n77",
+        "issue_text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.",
+        "owasp_category": "Software and Data Integrity Failures",
+        "owasp_id": "A08:2021",
+        "remediation": "Avoid deserializing data from untrusted sources with pickle, marshal, or shelve. Use safer formats like JSON. If YAML is needed, always use yaml.safe_load()."
+      },
+      {
+        "test_id": "B101",
+        "test_name": "assert_used",
+        "severity": "LOW",
+        "confidence": "HIGH",
+        "cwe_id": 703,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/703.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 83,
+        "line_range": [
+          83
+        ],
+        "code_snippet": "82     \"\"\"Using assert for validation \u2014 stripped in optimized mode (B101, CWE-703).\"\"\"\n83     assert user_input is not None, \"Input cannot be None\"\n84     assert len(user_input) > 0, \"Input cannot be empty\"",
+        "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+        "owasp_category": "Security Misconfiguration",
+        "owasp_id": "A05:2021",
+        "remediation": "Do not use assert statements for security checks \u2014 they are stripped in optimized bytecode (-O flag). Use proper conditional checks and raise exceptions."
+      },
+      {
+        "test_id": "B101",
+        "test_name": "assert_used",
+        "severity": "LOW",
+        "confidence": "HIGH",
+        "cwe_id": 703,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/703.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 84,
+        "line_range": [
+          84
+        ],
+        "code_snippet": "83     assert user_input is not None, \"Input cannot be None\"\n84     assert len(user_input) > 0, \"Input cannot be empty\"\n85     return user_input",
+        "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+        "owasp_category": "Security Misconfiguration",
+        "owasp_id": "A05:2021",
+        "remediation": "Do not use assert statements for security checks \u2014 they are stripped in optimized bytecode (-O flag). Use proper conditional checks and raise exceptions."
+      },
+      {
+        "test_id": "B306",
+        "test_name": "blacklist",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "cwe_id": 377,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/377.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 90,
+        "line_range": [
+          90
+        ],
+        "code_snippet": "89     \"\"\"Insecure temp file creation with mktemp (B306, CWE-377).\"\"\"\n90     tmp = tempfile.mktemp()\n91     with open(tmp, \"w\") as f:",
+        "issue_text": "Use of insecure and deprecated function (mktemp).",
+        "owasp_category": "Broken Access Control",
+        "owasp_id": "A01:2021",
+        "remediation": "Use tempfile.mkstemp() or tempfile.NamedTemporaryFile() instead of tempfile.mktemp() to avoid race conditions in temporary file creation."
+      },
+      {
+        "test_id": "B103",
+        "test_name": "set_bad_file_permissions",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "cwe_id": 732,
+        "cwe_url": "https://cwe.mitre.org/data/definitions/732.html",
+        "filename": "C:\\Users\\Piyush\\Downloads\\SecureScan-Application-Security-Tool-\\tests\\sample_vulnerable\\vulnerable_app.py",
+        "line_number": 100,
+        "line_range": [
+          100
+        ],
+        "code_snippet": "99     \"\"\"Overly permissive file permissions (B103, CWE-276).\"\"\"\n100     os.chmod(filepath, 0o777)\n101",
+        "issue_text": "Chmod setting a permissive mask 0o777 on file (filepath).",
+        "owasp_category": "Broken Access Control",
+        "owasp_id": "A01:2021",
+        "remediation": "Avoid setting overly permissive file permissions (e.g., 0o777). Use the principle of least privilege \u2014 set the minimum necessary permissions (e.g., 0o600 for owner-only access)."
+      }
+    ]
+  },
+  "owasp_summary": {
+    "A03:2021": {
+      "name": "Injection",
+      "description": "User-supplied data is not validated, filtered, or sanitized, leading to hostile data being used in commands or queries.",
+      "count": 5,
+      "severity_breakdown": {
+        "HIGH": 2,
+        "MEDIUM": 2,
+        "LOW": 1
+      },
+      "finding_indices": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "A02:2021": {
+      "name": "Cryptographic Failures",
+      "description": "Failures related to cryptography that lead to exposure of sensitive data or system compromise.",
+      "count": 3,
+      "severity_breakdown": {
+        "HIGH": 2,
+        "MEDIUM": 0,
+        "LOW": 1
+      },
+      "finding_indices": [
+        7,
+        8,
+        9
+      ]
+    },
+    "A08:2021": {
+      "name": "Software and Data Integrity Failures",
+      "description": "Code and infrastructure that does not protect against integrity violations, including insecure deserialization.",
+      "count": 2,
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 1
+      },
+      "finding_indices": [
+        0,
+        10
+      ]
+    },
+    "A05:2021": {
+      "name": "Security Misconfiguration",
+      "description": "Insecure default configurations, open cloud storage, misconfigured HTTP headers, or verbose error messages.",
+      "count": 2,
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 2
+      },
+      "finding_indices": [
+        11,
+        12
+      ]
+    },
+    "A01:2021": {
+      "name": "Broken Access Control",
+      "description": "Failures in enforcing access restrictions, allowing unauthorized users to act outside their intended permissions.",
+      "count": 2,
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "finding_indices": [
+        13,
+        14
+      ]
+    },
+    "A07:2021": {
+      "name": "Identification and Authentication Failures",
+      "description": "Weaknesses in authentication mechanisms including hardcoded credentials, weak passwords, and missing MFA.",
+      "count": 1,
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 1
+      },
+      "finding_indices": [
+        6
+      ]
+    }
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "22": {
+    "owasp_id": "A01:2021",
+    "owasp_category": "Broken Access Control",
+    "remediation": "Validate and sanitize all file path inputs. Use allowlists for permitted directories and canonicalize paths to prevent directory traversal."
+  },
+  "78": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid constructing OS commands from user input. Use parameterized APIs (e.g., subprocess with a list of arguments) or allowlist-based input validation instead of shell=True."
+  },
+  "79": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Sanitize and escape all user-supplied data before rendering in HTML. Use templating engines with auto-escaping enabled."
+  },
+  "89": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Use parameterized queries or ORM methods instead of string concatenation for SQL statements. Never interpolate user input directly into queries."
+  },
+  "90": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Use parameterized LDAP queries and validate/sanitize all user input before including it in LDAP search filters."
+  },
+  "94": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid using eval(), exec(), or compile() with untrusted input. Use safer alternatives like ast.literal_eval() for parsing data."
+  },
+  "95": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid eval() and exec() for code generation. Use structured data formats (JSON, YAML with safe loaders) or template engines instead."
+  },
+  "116": {
+    "owasp_id": "A09:2021",
+    "owasp_category": "Security Logging and Monitoring Failures",
+    "remediation": "Ensure all security-relevant events are logged. Sanitize log output to prevent log injection attacks."
+  },
+  "200": {
+    "owasp_id": "A04:2021",
+    "owasp_category": "Insecure Design",
+    "remediation": "Review Flask application configuration. Disable debug mode in production and ensure proper error handling is configured."
+  },
+  "259": {
+    "owasp_id": "A07:2021",
+    "owasp_category": "Identification and Authentication Failures",
+    "remediation": "Never hardcode passwords in source code. Use environment variables, secrets managers, or configuration files excluded from version control."
+  },
+  "261": {
+    "owasp_id": "A07:2021",
+    "owasp_category": "Identification and Authentication Failures",
+    "remediation": "Never hardcode passwords in source code. Use environment variables, secrets managers, or configuration files excluded from version control."
+  },
+  "269": {
+    "owasp_id": "A01:2021",
+    "owasp_category": "Broken Access Control",
+    "remediation": "Avoid overly permissive file permissions. Set the minimum necessary permissions using os.chmod() with restrictive modes (e.g., 0o600)."
+  },
+  "276": {
+    "owasp_id": "A01:2021",
+    "owasp_category": "Broken Access Control",
+    "remediation": "Set restrictive default permissions when creating files and directories. Use umask or explicit permission arguments."
+  },
+  "295": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Always verify SSL/TLS certificates. Do not set verify=False in HTTP requests or disable certificate validation."
+  },
+  "297": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Enable hostname verification for SSL/TLS connections. Do not disable check_hostname."
+  },
+  "310": {
+    "owasp_id": "A10:2021",
+    "owasp_category": "Server-Side Request Forgery (SSRF)",
+    "remediation": "Validate and sanitize all URLs before making requests. Use allowlists for permitted domains and block internal/private IP ranges."
+  },
+  "319": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Always use HTTPS instead of HTTP for transmitting sensitive data. Configure TLS properly on all endpoints."
+  },
+  "320": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Replace broken or weak hash algorithms (MD2, MD4, MD5, SHA1) with SHA-256 or stronger. Use bcrypt/scrypt/argon2 for passwords."
+  },
+  "326": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Use cryptographic keys of adequate length. RSA keys should be at least 2048 bits; AES keys at least 128 bits."
+  },
+  "327": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Replace broken or risky cryptographic algorithms (DES, RC4, Blowfish, MD5, SHA1) with modern alternatives (AES-256, SHA-256, or higher)."
+  },
+  "328": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Use strong hashing algorithms (SHA-256+). For password hashing, use bcrypt, scrypt, or argon2id with proper salt."
+  },
+  "330": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Use cryptographically secure random number generators (secrets module or os.urandom()) instead of the random module for security-sensitive operations."
+  },
+  "377": {
+    "owasp_id": "A01:2021",
+    "owasp_category": "Broken Access Control",
+    "remediation": "Use tempfile.mkstemp() or tempfile.NamedTemporaryFile() instead of tempfile.mktemp() to avoid race conditions in temporary file creation."
+  },
+  "400": {
+    "owasp_id": "A05:2021",
+    "owasp_category": "Security Misconfiguration",
+    "remediation": "Review and restrict import of potentially dangerous modules. Ensure imports are necessary and from trusted sources."
+  },
+  "501": {
+    "owasp_id": "A02:2021",
+    "owasp_category": "Cryptographic Failures",
+    "remediation": "Do not disable SSL/TLS certificate verification. Always validate server certificates to prevent man-in-the-middle attacks."
+  },
+  "502": {
+    "owasp_id": "A08:2021",
+    "owasp_category": "Software and Data Integrity Failures",
+    "remediation": "Avoid deserializing data from untrusted sources with pickle, marshal, or shelve. Use safer formats like JSON. If YAML is needed, always use yaml.safe_load()."
+  },
+  "506": {
+    "owasp_id": "A07:2021",
+    "owasp_category": "Identification and Authentication Failures",
+    "remediation": "Remove hardcoded credentials from source code. Use environment variables, a secrets manager, or encrypted configuration files."
+  },
+  "507": {
+    "owasp_id": "A07:2021",
+    "owasp_category": "Identification and Authentication Failures",
+    "remediation": "Do not use SSH with missing or disabled host key verification. Always verify host keys to prevent man-in-the-middle attacks."
+  },
+  "508": {
+    "owasp_id": "A05:2021",
+    "owasp_category": "Security Misconfiguration",
+    "remediation": "Implement proper SNMP security configuration. Use SNMPv3 with authentication and encryption instead of community strings."
+  },
+  "601": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Validate and sanitize all inputs used in shell commands. Use subprocess with shell=False and pass arguments as a list."
+  },
+  "602": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid subprocess calls with shell=True. Pass commands as a list of arguments with shell=False to prevent shell injection."
+  },
+  "603": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Validate subprocess call inputs. Even without shell=True, ensure arguments cannot be manipulated by untrusted input."
+  },
+  "604": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid using functions that execute commands through the shell. Use subprocess with shell=False instead."
+  },
+  "605": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid using os.system() to execute commands. Use subprocess.run() with shell=False for safer command execution."
+  },
+  "606": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid os.popen(). Use subprocess.run() with shell=False and capture output safely."
+  },
+  "607": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid starting processes with a shell via os.startfile or similar. Validate file paths and use safer alternatives."
+  },
+  "608": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Validate all inputs to SQL queries. Use parameterized queries and ORMs to prevent SQL injection."
+  },
+  "609": {
+    "owasp_id": "A05:2021",
+    "owasp_category": "Security Misconfiguration",
+    "remediation": "Use secure wildcard bindings. Bind to specific interfaces (e.g., 127.0.0.1) instead of 0.0.0.0 in non-production environments."
+  },
+  "610": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Avoid Django extra() and RawSQL with user-controlled input. Use Django's ORM query methods for safe database access."
+  },
+  "611": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Disable XML external entity processing. Use defusedxml or configure parsers to disallow DTDs and external entities."
+  },
+  "612": {
+    "owasp_id": "A05:2021",
+    "owasp_category": "Security Misconfiguration",
+    "remediation": "Enable logging for security events. Configure Flask/Django logging appropriately for production."
+  },
+  "701": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Use Jinja2 with autoescape enabled to prevent cross-site scripting (XSS). Set autoescape=True in Environment configuration."
+  },
+  "702": {
+    "owasp_id": "A03:2021",
+    "owasp_category": "Injection",
+    "remediation": "Use Mako templates with proper escaping. Enable default filters to auto-escape output."
+  },
+  "703": {
+    "owasp_id": "A05:2021",
+    "owasp_category": "Security Misconfiguration",
+    "remediation": "Do not use assert statements for security checks — they are stripped in optimized bytecode (-O flag). Use proper conditional checks and raise exceptions."
+  },
+  "732": {
+    "owasp_id": "A01:2021",
+    "owasp_category": "Broken Access Control",
+    "remediation": "Avoid setting overly permissive file permissions (e.g., 0o777). Use the principle of least privilege — set the minimum necessary permissions (e.g., 0o600 for owner-only access)."
+  }
+}

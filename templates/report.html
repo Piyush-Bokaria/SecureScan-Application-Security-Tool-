@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureScan Security Report</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-cyan: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-orange: #db6d28;
+            --accent-blue: #388bfd;
+            --severity-high: #f85149;
+            --severity-medium: #d29922;
+            --severity-low: #388bfd;
+            --gradient-header: linear-gradient(135deg, #1a1f35 0%, #0d1117 50%, #1a1525 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* ── Header ── */
+        .report-header {
+            background: var(--gradient-header);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(88,166,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .report-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-header h1 .shield { margin-right: 0.5rem; }
+
+        .report-header .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .report-header .meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+        /* ── Summary Cards ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+        }
+
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-card.high .value { color: var(--severity-high); }
+        .summary-card.medium .value { color: var(--severity-medium); }
+        .summary-card.low .value { color: var(--severity-low); }
+        .summary-card.total .value { color: var(--accent-cyan); }
+
+        .summary-card.status .value { font-size: 1.5rem; }
+        .status-pass { color: var(--accent-green) !important; }
+        .status-fail { color: var(--severity-high) !important; }
+
+        /* ── Section ── */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .section h2 .icon { margin-right: 0.5rem; }
+
+        /* ── OWASP Table ── */
+        .owasp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .owasp-table th {
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .owasp-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .owasp-table tr:hover { background: var(--bg-tertiary); }
+
+        .owasp-id {
+            font-weight: 600;
+            color: var(--accent-purple);
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+
+        .count-badge {
+            display: inline-block;
+            min-width: 28px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .badge-high { background: rgba(248,81,73,0.15); color: var(--severity-high); }
+        .badge-medium { background: rgba(210,153,34,0.15); color: var(--severity-medium); }
+        .badge-low { background: rgba(56,139,253,0.15); color: var(--severity-low); }
+        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-cyan); }
+
+        /* ── Finding Cards ── */
+        .finding-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover { border-color: var(--accent-cyan); }
+
+        .finding-card.severity-HIGH { border-left: 3px solid var(--severity-high); }
+        .finding-card.severity-MEDIUM { border-left: 3px solid var(--severity-medium); }
+        .finding-card.severity-LOW { border-left: 3px solid var(--severity-low); }
+
+        .finding-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .finding-header:hover { background: var(--bg-tertiary); }
+
+        .finding-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .finding-title .test-id {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-HIGH { background: rgba(248,81,73,0.15); color: var(--severity-high); }
+        .severity-MEDIUM { background: rgba(210,153,34,0.15); color: var(--severity-medium); }
+        .severity-LOW { background: rgba(56,139,253,0.15); color: var(--severity-low); }
+
+        .finding-body {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .finding-body.expanded { display: block; }
+
+        .finding-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .finding-meta .meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+        .finding-meta .meta-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .finding-meta .meta-value { color: var(--text-primary); font-weight: 500; }
+
+        .issue-text {
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(210,153,34,0.08);
+            border-left: 3px solid var(--accent-yellow);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .code-snippet {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .remediation-box {
+            padding: 1rem;
+            background: rgba(63,185,80,0.08);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .remediation-box .label {
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Footer ── */
+        .report-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .report-footer a { color: var(--accent-cyan); text-decoration: none; }
+        .report-footer a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .finding-meta { grid-template-columns: 1fr; }
+        }
+
+        /* ── Expand/Collapse ── */
+        .toggle-icon {
+            transition: transform 0.2s;
+            color: var(--text-muted);
+        }
+        .toggle-icon.rotated { transform: rotate(90deg); }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="report-header">
+            <h1><span class="shield">🛡️</span> SecureScan Security Report</h1>
+            <div class="meta">
+                <span>📂 Target: <strong>{{ result.metadata.target }}</strong></span>
+                <span>🕐 Scanned: <strong>{{ generated_at }}</strong></span>
+                <span>⏱️ Duration: <strong>{{ result.metadata.duration_seconds }}s</strong></span>
+                <span>📄 Files: <strong>{{ result.metadata.total_files_scanned }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card total">
+                <div class="value">{{ result.total_findings }}</div>
+                <div class="label">Total Findings</div>
+            </div>
+            <div class="summary-card high">
+                <div class="value">{{ severity_counts.HIGH }}</div>
+                <div class="label">🔴 High</div>
+            </div>
+            <div class="summary-card medium">
+                <div class="value">{{ severity_counts.MEDIUM }}</div>
+                <div class="label">🟡 Medium</div>
+            </div>
+            <div class="summary-card low">
+                <div class="value">{{ severity_counts.LOW }}</div>
+                <div class="label">🔵 Low</div>
+            </div>
+            <div class="summary-card status">
+                {% if severity_counts.HIGH > 0 %}
+                <div class="value status-fail">❌ FAIL</div>
+                {% else %}
+                <div class="value status-pass">✅ PASS</div>
+                {% endif %}
+                <div class="label">Status</div>
+            </div>
+        </div>
+
+        <!-- OWASP Top 10 Breakdown -->
+        {% if owasp_summary %}
+        <div class="section">
+            <h2><span class="icon">🏛️</span> OWASP Top 10:2021 Breakdown</h2>
+            <table class="owasp-table">
+                <thead>
+                    <tr>
+                        <th>OWASP ID</th>
+                        <th>Category</th>
+                        <th>Total</th>
+                        <th>High</th>
+                        <th>Medium</th>
+                        <th>Low</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for owasp_id, data in owasp_summary.items() %}
+                    <tr>
+                        <td><span class="owasp-id">{{ owasp_id }}</span></td>
+                        <td>{{ data.name }}</td>
+                        <td><span class="count-badge badge-total">{{ data.count }}</span></td>
+                        <td><span class="count-badge badge-high">{{ data.severity_breakdown.HIGH }}</span></td>
+                        <td><span class="count-badge badge-medium">{{ data.severity_breakdown.MEDIUM }}</span></td>
+                        <td><span class="count-badge badge-low">{{ data.severity_breakdown.LOW }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Detailed Findings -->
+        <div class="section">
+            <h2><span class="icon">📋</span> Detailed Findings ({{ findings|length }})</h2>
+
+            {% if findings|length == 0 %}
+            <div style="text-align: center; padding: 3rem; color: var(--accent-green);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">No security issues found!</div>
+                <div style="color: var(--text-secondary); margin-top: 0.5rem;">Your code passed all security checks.</div>
+            </div>
+            {% endif %}
+
+            {% for finding in findings %}
+            <div class="finding-card severity-{{ finding.severity }}">
+                <div class="finding-header" onclick="toggleFinding(this)">
+                    <div class="finding-title">
+                        <span class="toggle-icon">▶</span>
+                        <span class="test-id">{{ finding.test_id }}</span>
+                        <span>{{ finding.test_name }}</span>
+                        <span style="color: var(--text-muted); font-weight: 400;">— {{ finding.filename.split('/')[-1].split('\\')[-1] }}:{{ finding.line_number }}</span>
+                    </div>
+                    <div>
+                        <span class="severity-badge severity-{{ finding.severity }}">{{ finding.severity }}</span>
+                    </div>
+                </div>
+                <div class="finding-body">
+                    <div class="finding-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File</span>
+                            <span class="meta-value">{{ finding.filename }}:{{ finding.line_number }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Severity / Confidence</span>
+                            <span class="meta-value">{{ finding.severity }} / {{ finding.confidence }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CWE</span>
+                            <span class="meta-value"><a href="{{ finding.cwe_url }}" target="_blank" style="color: var(--accent-cyan);">CWE-{{ finding.cwe_id }}</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">OWASP Category</span>
+                            <span class="meta-value" style="color: var(--accent-purple);">{{ finding.owasp_id }} — {{ finding.owasp_category }}</span>
+                        </div>
+                    </div>
+
+                    <div class="issue-text">
+                        <strong>⚠️ Issue:</strong> {{ finding.issue_text }}
+                    </div>
+
+                    {% if finding.code_snippet %}
+                    <div class="code-snippet">{{ finding.code_snippet }}</div>
+                    {% endif %}
+
+                    <div class="remediation-box">
+                        <div class="label">💡 Remediation</div>
+                        {{ finding.remediation }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <div class="report-footer">
+            Generated by <strong>SecureScan v1.0.0</strong> •
+            <a href="https://owasp.org/www-project-top-ten/" target="_blank">OWASP Top 10:2021</a> •
+            Powered by <a href="https://bandit.readthedocs.io/" target="_blank">Bandit</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleFinding(header) {
+            const body = header.nextElementSibling;
+            const icon = header.querySelector('.toggle-icon');
+            body.classList.toggle('expanded');
+            icon.classList.toggle('rotated');
+        }
+
+        // Expand all HIGH severity findings by default
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.finding-card.severity-HIGH .finding-header').forEach(header => {
+                toggleFinding(header);
+            });
+        });
+    </script>
+</body>
+</html>

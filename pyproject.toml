@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "securescanner"
+version = "1.0.0"
+description = "A lightweight Python-based SAST security scanning tool with OWASP Top 10 mapping"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "SecureScan Team"}
+]
+keywords = ["security", "sast", "bandit", "owasp", "vulnerability-scanner"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "bandit>=1.7.5",
+    "jinja2>=3.1.2",
+    "rich>=13.0.0",
+    "pip-audit>=2.6.0",
+]
+
+[project.scripts]
+securescanner = "securescanner.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Piyush-Bokaria/SecureScan-Application-Security-Tool-"
+Repository = "https://github.com/Piyush-Bokaria/SecureScan-Application-Security-Tool-"
+
+[tool.setuptools.packages.find]
+include = ["securescanner*"]
+
+[tool.setuptools.package-data]
+securescanner = ["mappings/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v"
