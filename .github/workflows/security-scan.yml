@@ -38,14 +38,14 @@ jobs:
       - name: 🔍 Run SecureScan (JSON)
         id: scan
         run: |
-          python -m securescanner . --format json --output securescanner-report.json
+          python -m securescanner securescanner/ --format json --output securescanner-report.json
           echo "scan_exit_code=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
       # ── 5. Run SecureScan (HTML report) ─────────────────────────
       - name: 📄 Run SecureScan (HTML)
         run: |
-          python -m securescanner . --format html --output securescanner-report.html
+          python -m securescanner securescanner/ --format html --output securescanner-report.html
         continue-on-error: true
 
       # ── 6. Upload reports as artifacts ──────────────────────────
